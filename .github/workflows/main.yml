@@ -1,0 +1,42 @@
+name: main_branch
+
+on:
+  push:
+    branches: ["main"]
+
+jobs:
+  registry:
+    runs-on: ubuntu-lates
+    timeout-minutes: 60
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v3
+
+      - name: Login to docker hub
+        shell: bash
+        env:
+          DOCKER_HUB_LOGIN: ${{ secrets.DOCKER_HUB_LOGIN }}
+          DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          DOCKER_HUB_REPOSITORY: ${{ secrets.DOCKER_HUB_REPOSITORY }}
+        run: |
+          docker login -u $DOCKER_HUB_LOGIN -p $DOCKER_HUB_PASSWORD $DOCKER_HUB_REPOSITORY
+
+      - name: Create docker image
+        shell: bash
+        run: |
+          docker build --pull -f Dockerfile . -t ryszardszewczyk/linters:1
+
+      - name: Push docker image
+        shell: bash
+        run: |
+          docker push ryszardszewczyk/linters:1
+
+      - name: Remove local docker image
+        shell: bash
+        run: |
+          docker rmi -f ryszardszewczyk/linters:1
+
+      - name: Logout from docker hub
+        shell: bash
+        run: |
+          docker logout

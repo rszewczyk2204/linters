@@ -1,0 +1,21 @@
+name: pull_request
+
+on: pull_request
+
+jobs:
+  ubuntu:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v3
+
+      - name: Try to create docker image
+        shell: bash
+        run: |
+          docker build --pull -f Dockerfile . -t test/linters:test
+
+      - name: Delete test docker image
+        shell: bash
+        run: |
+          docker rmi -f test/linters:test
